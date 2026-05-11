@@ -784,11 +784,11 @@ TAGS_MAP.forEach(([elId,stateKey,items])=>buildTags(items,elId,stateKey));
 //  API
 // ═══════════════════════════════════════════
 async function callClaude(prompt){
-  const body=JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1400,messages:[{role:'user',content:prompt}]});
+  const body=JSON.stringify({model:'claude-sonnet-4-5-20251022',max_tokens:1400,messages:[{role:'user',content:prompt}]});
   const r=await fetch('/.netlify/functions/claude',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1400,messages:[{role:'user',content:prompt}]})
+    body:JSON.stringify({model:'claude-sonnet-4-5-20251022',max_tokens:1400,messages:[{role:'user',content:prompt}]})
   });
   const d=await r.json();
   const text=d.content?.map(i=>i.text||'').join('')||'';
