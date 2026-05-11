@@ -785,14 +785,10 @@ TAGS_MAP.forEach(([elId,stateKey,items])=>buildTags(items,elId,stateKey));
 // ═══════════════════════════════════════════
 async function callClaude(prompt){
   const body=JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1400,messages:[{role:'user',content:prompt}]});
-  const r=await fetch('https://corsproxy.io/?url=https://api.anthropic.com/v1/messages',{
+  const r=await fetch('/.netlify/functions/claude',{
     method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'x-api-key':'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',
-      'anthropic-version':'2023-06-01'
-    },
-    body
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1400,messages:[{role:'user',content:prompt}]})
   });
   const d=await r.json();
   const text=d.content?.map(i=>i.text||'').join('')||'';
