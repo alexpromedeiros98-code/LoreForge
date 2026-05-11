@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
+<meta name="theme-color" content="#0d0d14"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>The Loreforge</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+/* ═══ VARIABLES ═══ */
+:root{
+  --bg:#0d0d14;--bgc:rgba(255,255,255,0.03);--bgc2:rgba(255,255,255,0.06);
+  --b:#1e1e2e;--bl:#2a2a3a;
+  --g:#c9a84c;--gd:rgba(201,168,76,0.14);--gb:rgba(201,168,76,0.25);
+  --t:#f0e8d8;--t2:#c8c0b4;--tm:#888;--td:#444;
+  --p:#9b6dff;--pd:rgba(155,109,255,0.12);--pb:rgba(155,109,255,0.3);
+  --red:#e05555;--tab:62px;--sb:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-family:'Crimson Text',Georgia,serif}
+
+/* ═══ LAYOUT ═══ */
+#app{display:flex;flex-direction:column;height:100dvh}
+#hdr{flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:12px 20px;border-bottom:1px solid var(--b);background:var(--bg);position:relative;z-index:10}
+#hdr h1{font-size:21px;font-family:'Playfair Display',serif}
+#hdr h1 span{color:var(--g)}
+#back-btn{position:absolute;left:14px;background:none;border:none;color:var(--g);font-size:22px;cursor:pointer;padding:6px;display:none}
+#hdr-right{position:absolute;right:14px}
+#eye-btn{background:none;border:none;font-size:20px;cursor:pointer;padding:6px}
+#screens{flex:1;overflow:hidden;position:relative}
+.screen{position:absolute;inset:0;overflow-y:auto;padding:0 18px;padding-bottom:calc(var(--tab) + var(--sb) + 24px);opacity:0;pointer-events:none;transition:opacity .18s}
+.screen.active{opacity:1;pointer-events:all}
+.screen.slide{animation:slideIn .2s ease forwards}
+@keyframes slideIn{from{opacity:0;transform:translateX(22px)}to{opacity:1;transform:translateX(0)}}
+#tabs{flex-shrink:0;display:flex;border-top:1px solid var(--b);background:var(--bg);padding-bottom:var(--sb)}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 2px;border:none;background:none;cursor:pointer;color:var(--td);font-family:'Crimson Text',serif;font-size:10px;gap:2px;transition:color .2s}
+.tab.active{color:var(--g)}.ti{font-size:20px;line-height:1}
+
+/* ═══ OVERLAYS ═══ */
+#warm-ov{position:fixed;inset:0;pointer-events:none;z-index:9999;background:rgba(255,140,30,0);transition:background .3s}
+#dim-ov{position:fixed;inset:0;pointer-events:none;z-index:9998;background:rgba(0,0,0,0);transition:background .25s}
+
+/* ═══ COMPONENTS ═══ */
+.card{background:var(--bgc);border:1px solid var(--b);border-radius:14px;padding:18px;margin-bottom:14px}
+.sec{margin-bottom:18px}
+.lbl{font-size:10px;letter-spacing:2.5px;color:var(--g);text-transform:uppercase;margin-bottom:9px;display:block}
+.opt-lbl{color:var(--td);font-size:10px;text-transform:lowercase;letter-spacing:0}
+.divider{height:1px;background:var(--b);margin:14px 0}
+.tags{display:flex;flex-wrap:wrap;gap:7px}
+.tag{padding:7px 14px;border-radius:20px;border:1.5px solid var(--bl);background:rgba(255,255,255,0.02);color:var(--tm);font-family:'Crimson Text',serif;font-size:14px;cursor:pointer;transition:all .15s}
+.tag.sel{border-color:var(--g);background:var(--gd);color:var(--g)}
+.inp{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--bl);border-radius:10px;padding:12px;color:var(--t);font-size:15px;font-family:'Crimson Text',serif;outline:none}
+.inp::placeholder{color:var(--td)}
+.btn{width:100%;padding:15px;border-radius:12px;border:none;background:linear-gradient(135deg,#c9a84c,#a07830);color:#0d0d14;font-family:'Playfair Display',serif;font-size:17px;font-weight:700;cursor:pointer;letter-spacing:.3px;transition:opacity .2s;margin-bottom:18px}
+.btn:disabled{opacity:.35;cursor:not-allowed}.btn:active{opacity:.82}
+.btn-p{background:linear-gradient(135deg,#9b6dff,#6b3ddf);color:#fff}
+.btn-p:active{opacity:.82}
+.sh{text-align:center;padding:18px 0 14px}
+.sh-icon{font-size:30px;display:block;margin-bottom:6px}
+.sh-title{font-size:22px;font-family:'Playfair Display',serif}
+.sh-sub{font-size:13px;color:var(--tm);font-style:italic;margin-top:3px}
+.ad{border:1px dashed var(--bl);border-radius:8px;padding:11px;text-align:center;color:var(--td);font-size:11px;letter-spacing:1px;margin:12px 0}
+.stitle{font-size:10px;letter-spacing:2px;color:var(--g);text-transform:uppercase;padding:18px 0 10px;display:block}
+
+/* ═══ COUNTER ═══ */
+.ctr{display:flex;align-items:center;justify-content:space-between;background:var(--gd);border:1px solid var(--gb);border-radius:10px;padding:10px 14px;margin-bottom:14px}
+.ctr span{font-size:13px;color:var(--t2)}
+.ctr strong{color:var(--g)}
+.cbar{height:4px;border-radius:2px;background:var(--b);overflow:hidden;margin-top:6px}
+.cfill{height:100%;background:var(--g);border-radius:2px;transition:width .3s}
+.upbtn{padding:6px 14px;border-radius:20px;border:1.5px solid var(--g);background:none;color:var(--g);font-family:'Crimson Text',serif;font-size:13px;cursor:pointer;white-space:nowrap}
+
+/* ═══ TOOLS GRID ═══ */
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding-top:4px}
+.tcrd{background:var(--bgc);border:1px solid var(--b);border-radius:14px;padding:16px 14px;cursor:pointer;transition:border-color .18s;position:relative;text-align:left}
+.tcrd:active{background:var(--bgc2)}
+.tcrd-e{border-color:rgba(201,168,76,0.2)}
+.tcrd-f{border-color:rgba(155,109,255,0.2)}
+.tc-icon{font-size:26px;display:block;margin-bottom:8px}
+.tc-name{font-size:14px;font-family:'Playfair Display',serif;color:var(--t);margin-bottom:4px;line-height:1.2}
+.tc-desc{font-size:11px;color:var(--tm);line-height:1.4}
+.badge{position:absolute;top:8px;right:8px;border-radius:10px;padding:3px 7px;font-size:9px}
+.badge-free{background:var(--gd);border:1px solid var(--gb);color:var(--g)}
+.badge-e{background:rgba(201,168,76,0.15);border:1px solid var(--gb);color:var(--g)}
+.badge-f{background:linear-gradient(135deg,#9b6dff,#6b3ddf);color:#fff}
+
+/* ═══ RESULTS ═══ */
+.res{animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.rl{font-size:10px;letter-spacing:2px;color:var(--g);text-transform:uppercase;margin-bottom:8px;display:block}
+.rt{font-size:22px;font-family:'Playfair Display',serif;line-height:1.25;margin-bottom:14px}
+.rb{font-size:15px;line-height:1.75;color:var(--t2)}
+.twist{background:rgba(201,168,76,0.06);border:1px solid var(--gb);border-radius:12px;padding:15px;margin:14px 0}
+.italic{font-family:'Playfair Display',serif;font-style:italic;font-size:16px;line-height:1.7;color:var(--t)}
+.incipit{border-left:2px solid var(--g);padding-left:14px;margin-top:14px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
+.gi{background:rgba(255,255,255,0.03);border:1px solid var(--b);border-radius:10px;padding:11px}
+.gl{font-size:9px;letter-spacing:2px;color:var(--g);text-transform:uppercase;margin-bottom:3px;display:block}
+.gv{font-size:13px;color:var(--t)}
+.traits{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+.trait{padding:5px 11px;border-radius:20px;background:rgba(201,168,76,0.1);border:1px solid var(--gb);font-size:13px;color:#e0d4b8}
+.char-id{text-align:center;padding:18px 0 14px}
+.char-emoji{font-size:44px;display:block;margin-bottom:8px}
+.char-n{font-size:30px;font-family:'Playfair Display',serif;margin-bottom:5px}
+.char-p{font-size:13px;color:var(--g);font-style:italic}
+.li-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--b);align-items:flex-start;font-size:14px;color:var(--t2);line-height:1.6}
+.li-item:last-child{border-bottom:none}
+.li-n{color:var(--g);font-family:'Playfair Display',serif;font-size:16px;flex-shrink:0}
+.prophecy-verse{font-family:'Playfair Display',serif;font-style:italic;font-size:17px;line-height:2;color:var(--t);text-align:center;padding:16px;border:1px solid var(--gb);border-radius:12px;background:rgba(201,168,76,0.04);margin-bottom:14px}
+.dial-line{padding:10px 14px;border-radius:10px;margin-bottom:8px;font-size:14px;line-height:1.6}
+.dla{background:rgba(201,168,76,0.08);border-left:2px solid var(--g)}
+.dlb{background:rgba(255,255,255,0.03);border-left:2px solid var(--bl)}
+.dl-sp{font-size:10px;letter-spacing:1px;color:var(--g);margin-bottom:4px;text-transform:uppercase}
+.dl-sub{font-size:12px;color:var(--tm);font-style:italic;margin-top:3px}
+.panel-box{border:1px solid var(--bl);border-radius:10px;padding:14px;margin-bottom:10px}
+.panel-num{display:inline-block;padding:3px 10px;border-radius:20px;background:var(--pd);border:1px solid var(--pb);font-size:11px;color:var(--p);margin-bottom:8px}
+.loading{text-align:center;padding:50px 20px;color:var(--tm)}
+.spin{display:inline-block;animation:spin 1.8s linear infinite;font-size:26px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ═══ RESULT ACTIONS ═══ */
+.r-actions{display:flex;gap:8px;margin-top:14px}
+.act-btn{flex:1;padding:10px 6px;border-radius:10px;border:1px solid var(--bl);background:none;color:var(--t2);font-family:'Crimson Text',serif;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s}
+.act-btn:active{background:var(--bgc2)}
+.act-btn.saved{border-color:var(--g);color:var(--g);background:var(--gd)}
+.fil-btn{flex:1;padding:10px 6px;border-radius:10px;border:1.5px solid var(--pb);background:var(--pd);color:#b48fff;font-family:'Crimson Text',serif;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s}
+.fil-btn:active{background:rgba(155,109,255,0.2)}
+
+/* ═══ FAVORITES ═══ */
+.fav-item{background:var(--bgc);border:1px solid var(--b);border-radius:12px;padding:16px;margin-bottom:12px;position:relative}
+.fav-tool{font-size:10px;color:var(--g);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
+.fav-title{font-size:17px;font-family:'Playfair Display',serif;margin-bottom:5px}
+.fav-prev{font-size:13px;color:var(--tm);line-height:1.5}
+.fav-del{position:absolute;top:12px;right:12px;background:none;border:none;color:var(--td);font-size:16px;cursor:pointer;padding:4px}
+.fav-empty{text-align:center;padding:60px 20px;color:var(--tm)}
+
+/* ═══ FIL NARRATIF ═══ */
+.chain-step{position:relative;padding-left:32px;margin-bottom:8px}
+.chain-step::before{content:'';position:absolute;left:11px;top:36px;bottom:-8px;width:2px;background:linear-gradient(to bottom,var(--g),transparent)}
+.chain-step:last-child::before{display:none}
+.chain-dot{position:absolute;left:0;top:14px;width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#c9a84c,#a07830);display:flex;align-items:center;justify-content:center;font-size:12px}
+.chain-card{background:var(--bgc);border:1px solid var(--gb);border-radius:12px;padding:14px;margin-bottom:4px}
+.chain-type{font-size:9px;letter-spacing:2px;color:var(--g);text-transform:uppercase;margin-bottom:4px}
+.chain-title{font-size:16px;font-family:'Playfair Display',serif;color:var(--t);margin-bottom:4px}
+.chain-prev{font-size:12px;color:var(--tm);line-height:1.5}
+.chain-del{float:right;background:none;border:none;color:var(--td);font-size:14px;cursor:pointer;padding:0 0 0 8px}
+.chain-empty{text-align:center;padding:50px 20px;color:var(--tm)}
+.next-wrap{margin-top:20px}
+.next-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 20px}
+.next-btn{background:var(--pd);border:1.5px solid var(--pb);border-radius:12px;padding:14px 10px;cursor:pointer;text-align:left;transition:all .15s}
+.next-btn:active{background:rgba(155,109,255,0.2)}
+.nb-icon{font-size:22px;display:block;margin-bottom:6px}
+.nb-label{font-size:13px;font-family:'Playfair Display',serif;color:var(--t);display:block;margin-bottom:3px}
+.nb-desc{font-size:11px;color:var(--tm)}
+.export-btn{width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#9b6dff,#6b3ddf);color:#fff;font-family:'Playfair Display',serif;font-size:16px;font-weight:700;cursor:pointer;margin-top:8px}
+.forge-lock{text-align:center;padding:50px 20px}
+
+/* ═══ EYE CARE ═══ */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0}
+.toggle{position:relative;width:50px;height:28px;cursor:pointer}
+.toggle input{opacity:0;width:0;height:0}
+.ttrack{position:absolute;inset:0;border-radius:14px;background:var(--bl);transition:background .25s}
+.toggle input:checked+.ttrack{background:var(--g)}
+.tthumb{position:absolute;top:4px;left:4px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .25s}
+.toggle input:checked~.tthumb{transform:translateX(22px)}
+.step-sl{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:6px 0}
+.sdot{border-radius:50%;cursor:pointer;border:none;padding:0}
+.sl-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--tm);font-style:italic;margin-bottom:5px}
+.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.tcard{border-radius:14px;padding:14px 8px;text-align:center;border:1.5px solid var(--b);cursor:pointer;transition:border-color .2s}
+.tcard.sel{border-color:var(--g)}
+.tip-row{display:flex;gap:10px;padding:12px 0;align-items:flex-start}
+.tip-row+.tip-row{border-top:1px solid var(--b)}
+
+/* ═══ DAILY TIP ═══ */
+.tip-daily{background:linear-gradient(135deg,rgba(201,168,76,0.08),rgba(201,168,76,0.03));border:1px solid var(--gb);border-radius:14px;padding:16px;margin-bottom:16px}
+.tip-daily-label{font-size:10px;letter-spacing:2px;color:var(--g);text-transform:uppercase;margin-bottom:8px;display:block}
+.tip-daily-text{font-size:14px;font-style:italic;color:var(--t2);line-height:1.7}
+
+/* ═══ UPGRADE MODAL ═══ */
+#up-modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.78);align-items:flex-end}
+#up-modal.open{display:flex}
+.modal-sheet{width:100%;background:#13131f;border-radius:20px 20px 0 0;padding:26px 22px calc(34px + var(--sb));border-top:1px solid var(--b)}
+.plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.plan-card{border-radius:14px;padding:14px;cursor:pointer;position:relative}
+.plan-e{border:1.5px solid var(--gb);background:var(--gd)}
+.plan-f{border:1.5px solid var(--pb);background:var(--pd)}
+.plan-best{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#9b6dff,#6b3ddf);border-radius:20px;padding:3px 10px;font-size:10px;color:#fff;white-space:nowrap}
+.plan-price{font-size:22px;font-family:'Playfair Display',serif;margin-bottom:2px}
+.plan-period{font-size:10px;color:var(--tm);margin-bottom:10px}
+.plan-features{font-size:12px;color:var(--t2);line-height:1.7}
+.plan-check{display:none;position:absolute;top:8px;right:8px;font-size:16px}
+.trial-box{background:rgba(255,255,255,0.03);border:1px solid var(--bl);border-radius:10px;padding:10px 14px;text-align:center;margin-bottom:14px;font-size:13px;color:var(--t2)}
+.msub-btn{width:100%;padding:15px;border-radius:12px;border:none;background:linear-gradient(135deg,#c9a84c,#a07830);color:#0d0d14;font-family:'Playfair Display',serif;font-size:17px;font-weight:700;cursor:pointer;margin-bottom:10px}
+.mclose{width:100%;padding:13px;background:none;border:1px solid var(--bl);border-radius:10px;color:var(--tm);font-family:'Crimson Text',serif;font-size:15px;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="warm-ov"></div><div id="dim-ov"></div>
+<div id="app">
+
+<!-- HEADER -->
+<div id="hdr">
+  <button id="back-btn">←</button>
+  <h1>The Lore<span>forge</span></h1>
+  <div id="hdr-right"><button id="eye-btn">👁️</button></div>
+</div>
+
+<!-- SCREENS -->
+<div id="screens">
+
+  <!-- ACCUEIL -->
+  <div class="screen active" id="screen-home">
+    <div style="padding-top:14px">
+      <div id="daily-tip-wrap"></div>
+      <div class="ad">ESPACE PUBLICITAIRE — GOOGLE ADSENSE</div>
+      <span class="stitle">✦ Gratuit</span>
+      <div class="tgrid" id="grid-free"></div>
+      <span class="stitle">🥈 Étincelle</span>
+      <div class="tgrid" id="grid-etincelle"></div>
+      <span class="stitle">🥇 Forge Exclusif</span>
+      <div class="tgrid" id="grid-forge"></div>
+      <div class="ad" style="margin-bottom:10px">ESPACE PUBLICITAIRE — GOOGLE ADSENSE</div>
+    </div>
+  </div>
+
+  <!-- HISTOIRE -->
+  <div class="screen" id="screen-story">
+    <div class="sh"><span class="sh-icon">📖</span><div class="sh-title">Générateur d'Histoire</div><div class="sh-sub">De l'étincelle au récit complet</div></div>
+    <div class="ad">ESPACE PUBLICITAIRE</div><div id="c-story"></div>
+    <div class="sec"><span class="lbl">Genre</span><div class="tags" id="g-genre"></div></div>
+    <div class="sec"><span class="lbl">Ton</span><div class="tags" id="g-tone"></div></div>
+    <div class="sec"><span class="lbl">Thème <span class="opt-lbl">(optionnel)</span></span><input class="inp" id="g-theme" placeholder="ex: trahison, île perdue, miroir brisé…" maxlength="80"/></div>
+    <button class="btn" id="btn-story">✦ Générer l'Histoire</button>
+    <div id="r-story"></div><div class="ad" style="margin-bottom:10px">ESPACE PUBLICITAIRE</div>
+  </div>
+
+  <!-- PERSONNAGE -->
+  <div class="screen" id="screen-char">
+    <div class="sh"><span class="sh-icon">⚔️</span><div class="sh-title">Générateur de Personnage</div><div class="sh-sub">Un nom, une âme, une destinée</div></div>
+    <div class="ad">ESPACE PUBLICITAIRE</div><div id="c-char"></div>
+    <div class="sec"><span class="lbl">Nom souhaité <span class="opt-lbl">(optionnel)</span></span><input class="inp" id="g-char-name" placeholder="ex: Kael, Seraphiel, Malachar…" maxlength="40"/></div>
+    <div class="sec"><span class="lbl">Origine</span><div class="tags" id="g-origin"></div></div>
+    <div class="sec"><span class="lbl">Archétype</span><div class="tags" id="g-archetype"></div></div>
+    <div class="sec"><span class="lbl">Genre</span><div class="tags" id="g-gender"></div></div>
+    <button class="btn" id="btn-char">✦ Générer le Personnage</button>
+    <div id="r-char"></div><div class="ad" style="margin-bottom:10px">ESPACE PUBLICITAIRE</div>
+  </div>
+
+  <!-- PROPHÉTIE -->
+  <div class="screen" id="screen-prophecy">
+    <div class="sh"><span class="sh-icon">🔮</span><div class="sh-title">Générateur de Prophétie</div><div class="sh-sub">Des mots qui scellent les destins</div></div>
+    <div class="ad">ESPACE PUBLICITAIRE</div><div id="c-prophecy"></div>
+    <div class="sec"><span class="lbl">Thème</span><div class="tags" id="g-proph-theme"></div></div>
+    <div class="sec"><span class="lbl">Sujet <span class="opt-lbl">(optionnel)</span></span><input class="inp" id="g-proph-subject" placeholder="ex: un ange déchu, un royaume…" maxlength="60"/></div>
+    <button class="btn" id="btn-prophecy">✦ Révéler la Prophétie</button>
+    <div id="r-prophecy"></div><div class="ad" style="margin-bottom:10px">ESPACE PUBLICITAIRE</div>
+  </div>
+
+  <!-- QUÊTE -->
+  <div class="screen" id="screen-quest">
+    <div class="sh"><span class="sh-icon">🗺️</span><div class="sh-title">Générateur de Quête</div><div class="sh-sub">Une mission, un destin, un danger</div></div>
+    <div class="ad">ESPACE PUBLICITAIRE</div><div id="c-quest"></div>
+    <div class="sec"><span class="lbl">Type</span><div class="tags" id="g-quest-type"></div></div>
+    <div class="sec"><span class="lbl">Difficulté</span><div class="tags" id="g-quest-diff"></div></div>
+    <button class="btn" id="btn-quest">✦ Générer la Quête</button>
+    <div id="r-quest"></div><div class="ad" style="margin-bottom:10px">ESPACE PUBLICITAIRE</div>
+  </div>
+
+  <!-- MAGIE -->
+  <div class="screen" id="screen-magic">
+    <div class="sh"><span class="sh-icon">✨</span><div class="sh-title">Système de Magie</div><div class="sh-sub">Des règles qui forgent la puissance</div></div>
+    <div id="c-magic"></div>
+    <div class="sec"><span class="lbl">Type</span><div class="tags" id="g-magic-type"></div></div>
+    <div class="sec"><span class="lbl">Ton</span><div class="tags" id="g-magic-tone"></div></div>
+    <button class="btn" id="btn-magic">✦ Créer le Système</button>
+    <div id="r-magic"></div>
+  </div>
+
+  <!-- LIEU -->
+  <div class="screen" id="screen-place">
+    <div class="sh"><span class="sh-icon">🏰</span><div class="sh-title">Lieu & Royaume</div><div class="sh-sub">Des mondes que l'on ne veut plus quitter</div></div>
+    <div id="c-place"></div>
+    <div class="sec"><span class="lbl">Type</span><div class="tags" id="g-place-type"></div></div>
+    <div class="sec"><span class="lbl">Ambiance</span><div class="tags" id="g-place-mood"></div></div>
+    <button class="btn" id="btn-place">✦ Générer le Lieu</button>
+    <div id="r-place"></div>
+  </div>
+
+  <!-- FACTION -->
+  <div class="screen" id="screen-faction">
+    <div class="sh"><span class="sh-icon">⚜️</span><div class="sh-title">Faction & Clan</div><div class="sh-sub">Des allégeances qui déchirent les royaumes</div></div>
+    <div id="c-faction"></div>
+    <div class="sec"><span class="lbl">Nature</span><div class="tags" id="g-faction-type"></div></div>
+    <div class="sec"><span class="lbl">Idéologie</span><div class="tags" id="g-faction-ideo"></div></div>
+    <button class="btn" id="btn-faction">✦ Forger la Faction</button>
+    <div id="r-faction"></div>
+  </div>
+
+  <!-- UNIVERS -->
+  <div class="screen" id="screen-universe">
+    <div class="sh"><span class="sh-icon">🌌</span><div class="sh-title">Univers Complet</div><div class="sh-sub">Histoire · Héros · Lieu · Magie liés</div></div>
+    <div id="c-universe"></div>
+    <div class="sec"><span class="lbl">Genre</span><div class="tags" id="g-uni-genre"></div></div>
+    <div class="sec"><span class="lbl">Ambiance</span><div class="tags" id="g-uni-mood"></div></div>
+    <button class="btn" id="btn-universe">✦ Créer l'Univers</button>
+    <div id="r-universe"></div>
+  </div>
+
+  <!-- CHAPITRE -->
+  <div class="screen" id="screen-chapter">
+    <div class="sh"><span class="sh-icon">📝</span><div class="sh-title">Chapitre Complet</div><div class="sh-sub">Une scène prête à publier</div></div>
+    <div id="c-chapter"></div>
+    <div class="sec"><span class="lbl">Type de Scène</span><div class="tags" id="g-chap-type"></div></div>
+    <div class="sec"><span class="lbl">Contexte <span class="opt-lbl">(optionnel)</span></span><input class="inp" id="g-chap-ctx" placeholder="ex: deux guerriers avant la bataille finale…" maxlength="120"/></div>
+    <button class="btn" id="btn-chapter">✦ Écrire le Chapitre</button>
+    <div id="r-chapter"></div>
+  </div>
+
+  <!-- DIALOGUE -->
+  <div class="screen" id="screen-dialogue">
+    <div class="sh"><span class="sh-icon">💬</span><div class="sh-title">Dialogue Tendu</div><div class="sh-sub">Des mots qui révèlent les âmes</div></div>
+    <div id="c-dialogue"></div>
+    <div class="sec"><span class="lbl">Type de Tension</span><div class="tags" id="g-dial-tension"></div></div>
+    <div class="sec"><span class="lbl">Contexte <span class="opt-lbl">(optionnel)</span></span><input class="inp" id="g-dial-ctx" placeholder="ex: un ange déchu face à son créateur…" maxlength="120"/></div>
+    <button class="btn" id="btn-dialogue">✦ Générer le Dialogue</button>
+    <div id="r-dialogue"></div>
+  </div>
+
+  <!-- COUVERTURE (FORGE) -->
+  <div class="screen" id="screen-cover">
+    <div class="sh"><span class="sh-icon">🎨</span><div class="sh-title">Générateur de Couverture</div><div class="sh-sub">L'illustration qui capte tout</div></div>
+    <div id="c-cover"></div>
+    <div class="sec"><span class="lbl">Style Artistique</span><div class="tags" id="g-cover-style"></div></div>
+    <div class="sec"><span class="lbl">Ambiance</span><div class="tags" id="g-cover-mood"></div></div>
+    <div class="sec"><span class="lbl">Sujet <span class="opt-lbl">(optionnel)</span></span><input class="inp" id="g-cover-subject" placeholder="ex: une archange face à un démon…" maxlength="100"/></div>
+    <button class="btn btn-p" id="btn-cover">✦ Générer la Couverture</button>
+    <div id="r-cover"></div>
+  </div>
+
+  <!-- RELATION (FORGE) -->
+  <div class="screen" id="screen-relation">
+    <div class="sh"><span class="sh-icon">💫</span><div class="sh-title">Générateur de Relation</div><div class="sh-sub">La dynamique qui fait tout</div></div>
+    <div id="c-relation"></div>
+    <div class="sec"><span class="lbl">Personnage A</span><input class="inp" id="g-rel-a" placeholder="ex: Kael, guerrier déchu…" maxlength="60"/></div>
+    <div class="sec"><span class="lbl">Personnage B</span><input class="inp" id="g-rel-b" placeholder="ex: Seraphiel, archange…" maxlength="60"/></div>
+    <div class="sec"><span class="lbl">Type de Relation</span><div class="tags" id="g-rel-type"></div></div>
+    <button class="btn btn-p" id="btn-relation">✦ Générer la Relation</button>
+    <div id="r-relation"></div>
+  </div>
+
+  <!-- SCRIPT PANEL (FORGE) -->
+  <div class="screen" id="screen-script">
+    <div class="sh"><span class="sh-icon">🎬</span><div class="sh-title">Script Panel</div><div class="sh-sub">Votre scène case par case</div></div>
+    <div id="c-script"></div>
+    <div class="sec"><span class="lbl">Type de Scène</span><div class="tags" id="g-script-type"></div></div>
+    <div class="sec"><span class="lbl">Contexte</span><input class="inp" id="g-script-ctx" placeholder="ex: Kael découvre sa véritable nature…" maxlength="120"/></div>
+    <div class="sec"><span class="lbl">Nombre de Cases</span><div class="tags" id="g-script-panels"></div></div>
+    <button class="btn btn-p" id="btn-script">✦ Générer le Script</button>
+    <div id="r-script"></div>
+  </div>
+
+  <!-- ARC NARRATIF (FORGE) -->
+  <div class="screen" id="screen-arc">
+    <div class="sh"><span class="sh-icon">📚</span><div class="sh-title">Arc Narratif</div><div class="sh-sub">Planifiez votre saison complète</div></div>
+    <div id="c-arc"></div>
+    <div class="sec"><span class="lbl">Genre</span><div class="tags" id="g-arc-genre"></div></div>
+    <div class="sec"><span class="lbl">Nombre d'Épisodes</span><div class="tags" id="g-arc-episodes"></div></div>
+    <div class="sec"><span class="lbl">Concept Central <span class="opt-lbl">(optionnel)</span></span><input class="inp" id="g-arc-concept" placeholder="ex: un ange déchu cherche la rédemption…" maxlength="100"/></div>
+    <button class="btn btn-p" id="btn-arc">✦ Planifier la Saison</button>
+    <div id="r-arc"></div>
+  </div>
+
+  <!-- TITRE DE SÉRIE (FORGE) -->
+  <div class="screen" id="screen-serietitle">
+    <div class="sh"><span class="sh-icon">✍️</span><div class="sh-title">Titre de Série</div><div class="sh-sub">Le nom parfait pour votre œuvre</div></div>
+    <div id="c-serietitle"></div>
+    <div class="sec"><span class="lbl">Genre</span><div class="tags" id="g-st-genre"></div></div>
+    <div class="sec"><span class="lbl">Thème Central</span><div class="tags" id="g-st-theme"></div></div>
+    <div class="sec"><span class="lbl">Univers <span class="opt-lbl">(optionnel)</span></span><input class="inp" id="g-st-universe" placeholder="ex: anges et démons dans un monde moderne…" maxlength="80"/></div>
+    <button class="btn btn-p" id="btn-serietitle">✦ Trouver le Titre</button>
+    <div id="r-serietitle"></div>
+  </div>
+
+  <!-- FIL NARRATIF -->
+  <div class="screen" id="screen-forge">
+    <div class="sh"><span class="sh-icon">🧵</span><div class="sh-title">Fil Narratif</div><div class="sh-sub">Entremêlez vos créations</div></div>
+    <div id="forge-locked" style="display:none" class="forge-lock">
+      <div style="font-size:44px;margin-bottom:14px">🔒</div>
+      <div style="font-size:18px;font-family:'Playfair Display',serif;margin-bottom:8px">Fonctionnalité Forge</div>
+      <div style="font-size:14px;color:var(--tm);margin-bottom:20px;line-height:1.7;font-style:italic">Enchaîne personnages, histoires, prophéties<br>et lieux en un univers cohérent</div>
+      <button class="btn btn-p" style="max-width:260px;margin:0 auto" onclick="openUpgrade()">✦ Débloquer Forge 9,99€</button>
+    </div>
+    <div id="forge-content">
+      <div id="chain-list"></div>
+      <div id="next-steps-wrap"></div>
+      <div id="export-wrap" style="display:none">
+        <button class="export-btn" onclick="exportUniverse()">📄 Exporter l'Univers complet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAVORIS -->
+  <div class="screen" id="screen-favs">
+    <div class="sh"><span class="sh-icon">⭐</span><div class="sh-title">Mes Favoris</div><div class="sh-sub">Vos meilleures créations</div></div>
+    <div id="favs-list"></div>
+  </div>
+
+  <!-- CONFORT VISUEL -->
+  <div class="screen" id="screen-eye">
+    <div class="sh"><span class="sh-icon">👁️</span><div class="sh-title">Confort Visuel</div><div class="sh-sub">Prenez soin de vos yeux</div></div>
+    <span class="lbl">Filtre Lumière Bleue</span>
+    <div class="card" style="margin-bottom:18px">
+      <div class="toggle-row">
+        <div><div style="font-size:15px;margin-bottom:2px">Filtre chaud</div><div style="font-size:12px;color:var(--tm);font-style:italic">Réduit la lumière bleue</div></div>
+        <label class="toggle"><input type="checkbox" id="tog-warm"/><span class="ttrack"></span><span class="tthumb"></span></label>
+      </div>
+      <div id="warm-ctrl" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--b)">
+        <div style="font-size:14px;margin-bottom:5px">Intensité</div>
+        <div class="sl-labels"><span>Léger</span><span>Fort</span></div>
+        <div class="step-sl" id="warm-sl"></div>
+        <div id="warm-prev" style="margin-top:10px;border-radius:8px;padding:9px;text-align:center;font-size:13px;font-style:italic;border:1px solid rgba(255,147,41,0.3);color:#fff">Aperçu du filtre</div>
+      </div>
+    </div>
+    <span class="lbl">Luminosité</span>
+    <div class="card" style="margin-bottom:18px">
+      <div class="sl-labels"><span>🌑 Sombre</span><span>☀️ Vif</span></div>
+      <div class="step-sl" id="bright-sl"></div>
+      <div id="bright-val" style="font-size:12px;color:var(--tm);font-style:italic;margin-top:7px">100%</div>
+    </div>
+    <span class="lbl">Thème</span>
+    <div class="theme-grid" id="theme-grid"></div>
+    <span class="lbl">Conseils</span>
+    <div class="card" style="margin-bottom:40px">
+      <div class="tip-row"><span style="font-size:18px;flex-shrink:0">⏱️</span><span style="font-size:14px;color:var(--t2);line-height:1.6">Règle 20-20-20 : toutes les 20 min, regardez à 6 m pendant 20 secondes</span></div>
+      <div class="tip-row"><span style="font-size:18px;flex-shrink:0">💡</span><span style="font-size:14px;color:var(--t2);line-height:1.6">Gardez une lumière d'ambiance douce — jamais dans le noir total</span></div>
+      <div class="tip-row"><span style="font-size:18px;flex-shrink:0">📱</span><span style="font-size:14px;color:var(--t2);line-height:1.6">Tenez l'écran à au moins 40 cm de vos yeux</span></div>
+      <div class="tip-row"><span style="font-size:18px;flex-shrink:0">🌙</span><span style="font-size:14px;color:var(--t2);line-height:1.6">Activez le filtre chaud 2h avant de dormir</span></div>
+    </div>
+  </div>
+
+</div><!-- /screens -->
+
+<!-- TABS -->
+<div id="tabs">
+  <button class="tab active" data-sc="home"><span class="ti">🏠</span><span>Outils</span></button>
+  <button class="tab" data-sc="favs"><span class="ti">⭐</span><span>Favoris</span></button>
+  <button class="tab" data-sc="forge"><span class="ti">🧵</span><span>Fil</span></button>
+  <button class="tab" data-sc="eye"><span class="ti">👁️</span><span>Confort</span></button>
+</div>
+</div><!-- /app -->
+
+<!-- UPGRADE MODAL -->
+<div id="up-modal">
+  <div class="modal-sheet">
+    <div style="text-align:center;font-size:22px;font-family:'Playfair Display',serif;margin-bottom:4px">✦ Passez Premium</div>
+    <div style="text-align:center;font-size:13px;color:var(--tm);font-style:italic;margin-bottom:20px">Choisissez votre niveau de puissance</div>
+    <div class="plan-grid">
+      <div class="plan-card plan-e" id="plan-e" onclick="selectPlan('etincelle')">
+        <div style="font-size:18px;margin-bottom:6px">🥈</div>
+        <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--t);margin-bottom:4px">Étincelle</div>
+        <div class="plan-price" style="color:var(--g)">2,99€</div>
+        <div class="plan-period">/mois</div>
+        <div class="plan-features">♾️ Illimité<br>🔓 10 outils<br>🚫 Sans pub<br>📄 Export PDF</div>
+        <div class="plan-check" id="check-e" style="color:var(--g)">✦</div>
+      </div>
+      <div class="plan-card plan-f" id="plan-f" onclick="selectPlan('forge')">
+        <div class="plan-best">⚡ Meilleure offre</div>
+        <div style="font-size:18px;margin-bottom:6px">🥇</div>
+        <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--t);margin-bottom:4px">Forge</div>
+        <div class="plan-price" style="color:#b48fff">9,99€</div>
+        <div class="plan-period">/mois</div>
+        <div class="plan-features">✦ Tout Étincelle<br>🧵 Fil Narratif<br>🎨 Couverture<br>💫 Relation<br>🎬 Script Panel<br>📚 Arc Narratif<br>✍️ Titre de Série</div>
+        <div class="plan-check" id="check-f" style="color:#b48fff">✦</div>
+      </div>
+    </div>
+    <div class="trial-box">🎁 <strong style="color:var(--t)">7 jours d'essai gratuit</strong> sur les deux plans</div>
+    <button class="msub-btn" id="msub-btn">✦ Commencer — Étincelle 2,99€/mois</button>
+    <button class="mclose" id="mclose">Continuer en version gratuite</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ═══════════════════════════════════════════
+//  CONSTANTS
+// ═══════════════════════════════════════════
+const GENRES=['Fantasy','Sci-Fi','Romance','Thriller','Horreur','Aventure','Dystopie','Mythologie','Angélique','Démonique'];
+const TONES=['Épique','Sombre','Poétique','Mystérieux','Tragique','Humoristique','Lyrique','Viscéral'];
+const ORIGINS=['Japonais','Nordique','Latin','Elfique','Arabe','Slave','Inventé','Grec','Céleste','Démoniaque','Archange','Ancien','Hébreu','Persan'];
+const ARCHETYPES=['Héros','Anti-héros','Mentor','Villain','Trickster','Gardien','Érudit','Guerrier','Ange Déchu','Archange','Démon','Dieu Oublié','Nephilim','Séraphin','Elu'];
+const GENDERS=['Masculin','Féminin','Peu importe'];
+const PROPH_THEMES=['Mort','Renaissance','Trahison','Amour','Guerre','Lumière','Ombre','Temps','Chute','Rédemption'];
+const QUEST_TYPES=['Sauvetage','Vengeance','Découverte','Destruction','Protection','Infiltration','Rituel','Rédemption'];
+const QUEST_DIFF=['Ordinaire','Épique','Légendaire'];
+const MAGIC_TYPES=['Élémentaire','Mental','Sang','Lumière','Ombre','Runes','Invocation','Temps','Divin','Maudit'];
+const MAGIC_TONES=['Élégant','Brutal','Mystique','Technique','Organique','Cosmique'];
+const PLACE_TYPES=['Ville','Forêt','Donjon','Île','Désert','Montagne','Cité céleste','Enfers','Sanctuaire','Nécropole'];
+const PLACE_MOODS=['Mystérieux','Menaçant','Magnifique','Abandonné','Vivant','Maudit','Sacré'];
+const FACTION_TYPES=['Ordre secret','Empire','Guilde','Culte','Rébellion','Clan','Académie','Conclave Angélique','Légion Démonique'];
+const FACTION_IDEO=['Pouvoir','Justice','Survie','Connaissance','Foi','Liberté','Vengeance','Équilibre'];
+const UNI_GENRES=['Fantasy','Sci-Fi','Dark Fantasy','Mythologie','Post-apo','Steampunk','Angélique','Démonique'];
+const UNI_MOODS=['Épique','Sombre','Mystique','Tragique','Héroïque'];
+const CHAP_TYPES=['Combat','Révélation','Romance','Trahison','Voyage','Confrontation','Deuil','Transcendance'];
+const DIAL_TENSIONS=['Confrontation','Séduction','Mensonge','Réconciliation','Adieu','Manipulation','Aveu','Ultimatum'];
+const COVER_STYLES=['Manga','Webtoon','Fantastique','Réaliste','Sombre','Lumineux','Minimaliste','Épique'];
+const COVER_MOODS=['Mystérieux','Dramatique','Romantique','Épique','Mélancolique','Puissant','Délicat','Intense'];
+const REL_TYPES=['Amour interdit','Rivalité','Alliance forcée','Mentor-Élève','Ennemis jurés','Frères de sang','Rédemption','Obsession','Complicité','Trahison'];
+const SCRIPT_TYPES=['Action','Révélation','Émotion','Combat','Rencontre','Transformation','Mystère'];
+const SCRIPT_PANELS=['4 cases','6 cases','8 cases','10 cases'];
+const ARC_GENRES=['Fantasy','Webtoon','Manga','Sci-Fi','Romance','Dark Fantasy','Angélique'];
+const ARC_EPISODES=['6 épisodes','12 épisodes','24 épisodes','36 épisodes'];
+const ST_GENRES=['Fantasy','Manga','Webtoon','Romance','Horreur','Sci-Fi','Angélique','Démonique'];
+const ST_THEMES=['Amour','Guerre','Rédemption','Pouvoir','Trahison','Destin','Lumière vs Ombre','Chute'];
+const THEMES_DEF=[
+  {k:'dark',icon:'🌑',name:'Sombre',bg:'#0d0d14',bgc:'rgba(255,255,255,0.03)',t:'#f0e8d8',t2:'#c8c0b4',b:'#1e1e2e'},
+  {k:'sepia',icon:'📜',name:'Sépia',bg:'#1a1510',bgc:'rgba(255,240,200,0.05)',t:'#f5e6c8',t2:'#d4c4a0',b:'#2e2416'},
+  {k:'midnight',icon:'🌌',name:'Minuit',bg:'#080810',bgc:'rgba(100,120,200,0.04)',t:'#dde8f5',t2:'#b0c0d8',b:'#12121e'},
+];
+const DAILY_TIPS=[
+  'Commence chaque scène in medias res — au cœur de l\'action, sans introduction.',
+  'Un bon villain croit sincèrement avoir raison. Donne-lui des motivations compréhensibles.',
+  'La tension naît du conflit entre ce que le personnage veut et ce dont il a besoin.',
+  'Les meilleurs dialogues disent une chose mais en signifient une autre.',
+  'Un monde riche se construit par détails sensoriels — sons, odeurs, textures.',
+  'La prophétie la plus puissante est celle qui se réalise d\'une façon inattendue.',
+  'Chaque personnage secondaire devrait avoir une vie hors-champ de la scène.',
+  'Le moment de faiblesse d\'un héros révèle son vrai caractère.',
+  'Un twist fort doit être surprenant mais inévitable en relecture.',
+  'Le silence dans un dialogue dit parfois plus que les mots.',
+  'L\'ange déchu est souvent plus fascinant que l\'ange parfait.',
+  'Les meilleures histoires parlent d\'une blessure universelle avec des mots uniques.',
+];
+const FREE_TOOLS=[
+  {id:'story',icon:'📖',name:"Générateur d'Histoire",desc:'Synopsis, personnages, twist, incipit'},
+  {id:'char',icon:'⚔️',name:'Générateur de Personnage',desc:'Nom, backstory, traits, citation'},
+  {id:'prophecy',icon:'🔮',name:'Générateur de Prophétie',desc:'Vers cryptiques et sens caché'},
+  {id:'quest',icon:'🗺️',name:'Générateur de Quête',desc:'Mission, obstacles, récompense, twist'},
+];
+const ETI_TOOLS=[
+  {id:'magic',icon:'✨',name:'Système de Magie',desc:'Règles, limites, pouvoirs rares'},
+  {id:'place',icon:'🏰',name:'Lieu & Royaume',desc:'Géographie, secrets, légendes'},
+  {id:'faction',icon:'⚜️',name:'Faction & Clan',desc:'Idéologie, chef, ennemis, secrets'},
+  {id:'universe',icon:'🌌',name:'Univers Complet',desc:'Histoire + héros + lieu + magie'},
+  {id:'chapter',icon:'📝',name:'Chapitre Complet',desc:'Scène de 400 mots à publier'},
+  {id:'dialogue',icon:'💬',name:'Dialogue Tendu',desc:'Échange entre deux personnages'},
+];
+const FORGE_TOOLS=[
+  {id:'cover',icon:'🎨',name:'Générateur de Couverture',desc:'Illustration, palette, composition'},
+  {id:'relation',icon:'💫',name:'Générateur de Relation',desc:'Dynamique entre deux personnages'},
+  {id:'script',icon:'🎬',name:'Script Panel',desc:'Votre scène case par case'},
+  {id:'arc',icon:'📚',name:'Arc Narratif',desc:'Planifiez votre saison complète'},
+  {id:'serietitle',icon:'✍️',name:'Titre de Série',desc:'Le nom parfait pour votre œuvre'},
+];
+const NEXT_STEPS={
+  char:[{t:'story',icon:'📖',l:'Créer une Histoire',d:'avec ce personnage'},{t:'prophecy',icon:'🔮',l:'Créer une Prophétie',d:'liée à son destin'},{t:'dialogue',icon:'💬',l:'Créer un Dialogue',d:'où il prend la parole'},{t:'cover',icon:'🎨',l:'Créer la Couverture',d:'de ce personnage'}],
+  story:[{t:'char',icon:'⚔️',l:'Créer un Personnage',d:'lié à cette histoire'},{t:'prophecy',icon:'🔮',l:'Créer une Prophétie',d:'sur l\'issue de l\'histoire'},{t:'place',icon:'🏰',l:'Créer un Lieu',d:'où l\'histoire se déroule'},{t:'chapter',icon:'📝',l:'Écrire un Chapitre',d:'de cette histoire'}],
+  prophecy:[{t:'char',icon:'⚔️',l:'Créer le Héros',d:'dont parle la prophétie'},{t:'quest',icon:'🗺️',l:'Créer la Quête',d:'pour l\'accomplir'}],
+  place:[{t:'faction',icon:'⚜️',l:'Créer une Faction',d:'qui règne ici'},{t:'story',icon:'📖',l:'Créer une Histoire',d:'qui se passe ici'}],
+  quest:[{t:'char',icon:'⚔️',l:'Créer le Héros',d:'qui mène la quête'},{t:'place',icon:'🏰',l:'Créer le Lieu',d:'de la quête'}],
+  magic:[{t:'faction',icon:'⚜️',l:'Créer une Faction',d:'qui maîtrise cette magie'},{t:'char',icon:'⚔️',l:'Créer un Utilisateur',d:'de ce système'}],
+  faction:[{t:'char',icon:'⚔️',l:'Créer le Chef',d:'de cette faction'},{t:'place',icon:'🏰',l:'Créer le QG',d:'de la faction'}],
+  dialogue:[{t:'story',icon:'📖',l:'Créer l\'Histoire',d:'autour de cette scène'},{t:'relation',icon:'💫',l:'Explorer la Relation',d:'entre ces personnages'}],
+  chapter:[{t:'chapter',icon:'📝',l:'Chapitre Suivant',d:'continuer la scène'},{t:'arc',icon:'📚',l:'Planifier la Saison',d:'autour de cette scène'}],
+  cover:[{t:'story',icon:'📖',l:'Créer l\'Histoire',d:'de cette couverture'},{t:'serietitle',icon:'✍️',l:'Trouver le Titre',d:'pour cette série'}],
+  relation:[{t:'dialogue',icon:'💬',l:'Écrire leur Dialogue',d:'selon cette dynamique'},{t:'story',icon:'📖',l:'Créer leur Histoire',d:'ensemble'}],
+  script:[{t:'chapter',icon:'📝',l:'Écrire le Chapitre',d:'complet de cette scène'},{t:'arc',icon:'📚',l:'Planifier la Saison',d:'autour de cet épisode'}],
+  arc:[{t:'chapter',icon:'📝',l:'Écrire l\'Episode 1',d:'de cet arc'},{t:'serietitle',icon:'✍️',l:'Trouver le Titre',d:'de cette série'}],
+  serietitle:[{t:'cover',icon:'🎨',l:'Créer la Couverture',d:'de cette série'},{t:'arc',icon:'📚',l:'Planifier la Saison 1',d:'de cette série'}],
+};
+const FREE_LIMIT=5;
+const DAILY_KEY='lf_daily';
+const FAVS_KEY='lf_favs';
+const CHAIN_KEY='lf_chain';
+const PREM_KEY='lf_premium';
+const MAIN_SCREENS=['home','favs','forge','eye'];
+
+// ═══════════════════════════════════════════
+//  DEV MODE
+// ═══════════════════════════════════════════
+(function(){
+  const p=new URLSearchParams(window.location.search);
+  const code=p.get('dev');
+  if(code&&code==='5/3>@908/72*1&'){
+    localStorage.setItem(PREM_KEY,'forge');
+  }
+})();
+
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+const sel={
+  genre:'Fantasy',tone:'Épique',origin:'Céleste',archetype:'Ange Déchu',gender:'Peu importe',
+  'proph-theme':'Trahison','quest-type':'Sauvetage','quest-diff':'Épique',
+  'magic-type':'Divin','magic-tone':'Mystique',
+  'place-type':'Cité céleste','place-mood':'Sacré',
+  'faction-type':'Conclave Angélique','faction-ideo':'Foi',
+  'uni-genre':'Angélique','uni-mood':'Épique',
+  'chap-type':'Révélation','dial-tension':'Confrontation',
+  'cover-style':'Webtoon','cover-mood':'Dramatique',
+  'rel-type':'Amour interdit',
+  'script-type':'Révélation','script-panels':'6 cases',
+  'arc-genre':'Webtoon','arc-episodes':'12 épisodes',
+  'st-genre':'Webtoon','st-theme':'Chute',
+};
+let warmOn=false,warmVal=0.2,brightVal=1,currentTheme='dark';
+let selectedPlan='etincelle';
+let narrativeChain=[];
+
+// ═══════════════════════════════════════════
+//  PREMIUM
+// ═══════════════════════════════════════════
+function isPrem(){const p=localStorage.getItem(PREM_KEY);return p==='etincelle'||p==='forge';}
+function isForge(){return localStorage.getItem(PREM_KEY)==='forge';}
+function isEti(){return isPrem();}
+function canGen(tool){if(isPrem())return true;return(getUsage()[tool]||0)<FREE_LIMIT;}
+function getUsage(){
+  const today=new Date().toDateString();
+  try{const d=JSON.parse(localStorage.getItem(DAILY_KEY)||'{}');if(d.date===today)return d;}catch{}
+  return{date:today};
+}
+function incUsage(t){const d=getUsage();d[t]=(d[t]||0)+1;localStorage.setItem(DAILY_KEY,JSON.stringify(d));}
+function renderCounter(tool,elId){
+  const el=document.getElementById(elId);if(!el)return;
+  if(isPrem()){
+    el.innerHTML=`<div style="display:flex;align-items:center;gap:8px;background:var(--gd);border:1px solid var(--gb);border-radius:10px;padding:10px 14px;margin-bottom:14px"><span>👑</span><span style="font-size:13px;color:var(--t2)">Premium — <strong style="color:var(--g)">illimité</strong></span></div>`;
+    return;
+  }
+  const left=Math.max(0,FREE_LIMIT-(getUsage()[tool]||0));
+  el.innerHTML=`<div class="ctr"><span>Restantes : <strong>${left}/${FREE_LIMIT}</strong></span><button class="upbtn" onclick="openUpgrade()">✦ Premium</button></div><div class="cbar"><div class="cfill" style="width:${(left/FREE_LIMIT)*100}%"></div></div>`;
+}
+
+// ═══════════════════════════════════════════
+//  FAVORITES
+// ═══════════════════════════════════════════
+function getFavs(){try{return JSON.parse(localStorage.getItem(FAVS_KEY)||'[]');}catch{return[];}}
+function saveFav(item){const f=getFavs();f.unshift(item);if(f.length>50)f.pop();localStorage.setItem(FAVS_KEY,JSON.stringify(f));renderFavs();}
+function delFav(id){const f=getFavs().filter(x=>x.id!==id);localStorage.setItem(FAVS_KEY,JSON.stringify(f));renderFavs();}
+function renderFavs(){
+  const list=document.getElementById('favs-list');
+  const f=getFavs();
+  if(!f.length){list.innerHTML=`<div class="fav-empty"><span style="font-size:40px;display:block;margin-bottom:12px">⭐</span><p style="font-size:15px;margin-bottom:8px">Aucun favori encore</p><p style="font-size:13px;color:var(--td)">Appuie sur ⭐ sous chaque résultat</p></div>`;return;}
+  list.innerHTML=f.map(x=>`<div class="fav-item"><button class="fav-del" onclick="delFav('${x.id}')">✕</button><div class="fav-tool">${x.tool}</div><div class="fav-title">${x.title}</div><div class="fav-prev">${x.preview}</div></div>`).join('');
+}
+
+// ═══════════════════════════════════════════
+//  FIL NARRATIF
+// ═══════════════════════════════════════════
+function loadChain(){try{narrativeChain=JSON.parse(localStorage.getItem(CHAIN_KEY)||'[]');}catch{narrativeChain=[];}}
+function saveChain(){localStorage.setItem(CHAIN_KEY,JSON.stringify(narrativeChain));}
+const TOOL_ICONS={char:'⚔️',story:'📖',prophecy:'🔮',quest:'🗺️',magic:'✨',place:'🏰',faction:'⚜️',universe:'🌌',chapter:'📝',dialogue:'💬',cover:'🎨',relation:'💫',script:'🎬',arc:'📚',serietitle:'✍️'};
+window.addToChain=function(id,toolType,tool,title,preview){
+  if(!isForge()){openUpgrade();return;}
+  if(narrativeChain.find(x=>x.id===id)){alert('Déjà dans le Fil !');return;}
+  narrativeChain.push({id,toolType,tool,title,preview});
+  saveChain();renderChain();navigateTo('forge');
+};
+window.removeFromChain=function(id){
+  narrativeChain=narrativeChain.filter(x=>x.id!==id);
+  saveChain();renderChain();
+};
+function renderChain(){
+  const locked=document.getElementById('forge-locked');
+  const content=document.getElementById('forge-content');
+  if(!isForge()){locked.style.display='block';content.style.display='none';return;}
+  locked.style.display='none';content.style.display='block';
+  const list=document.getElementById('chain-list');
+  const exportWrap=document.getElementById('export-wrap');
+  if(!narrativeChain.length){
+    list.innerHTML=`<div class="chain-empty"><span style="font-size:40px;display:block;margin-bottom:12px">🧵</span><p style="font-size:15px;margin-bottom:8px">Ton fil est vide</p><p style="font-size:13px;color:var(--td);line-height:1.7">Génère un personnage, une histoire…<br>puis appuie sur <strong style="color:#b48fff">🧵 Fil</strong> pour les relier</p></div>`;
+    document.getElementById('next-steps-wrap').innerHTML='';
+    exportWrap.style.display='none';
+    return;
+  }
+  list.innerHTML=narrativeChain.map(item=>`
+    <div class="chain-step">
+      <div class="chain-dot">${TOOL_ICONS[item.toolType]||'✦'}</div>
+      <div class="chain-card">
+        <button class="chain-del" onclick="removeFromChain('${item.id}')">✕</button>
+        <div class="chain-type">${item.tool}</div>
+        <div class="chain-title">${item.title}</div>
+        <div class="chain-prev">${item.preview}</div>
+      </div>
+    </div>`).join('');
+  exportWrap.style.display='block';
+  const lastType=narrativeChain[narrativeChain.length-1].toolType;
+  const steps=(NEXT_STEPS[lastType]||[]).slice(0,4);
+  const wrap=document.getElementById('next-steps-wrap');
+  wrap.innerHTML=steps.length?`<div class="next-wrap"><span class="lbl">✦ Prochaine étape suggérée</span><div class="next-grid">${steps.map(s=>`<button class="next-btn" onclick="continueWith('${s.t}')"><span class="nb-icon">${s.icon}</span><span class="nb-label">${s.l}</span><span class="nb-desc">${s.d}</span></button>`).join('')}</div></div>`:'';
+}
+function getChainContext(){
+  if(!narrativeChain.length)return'';
+  return'\n\nCONTEXTE (assure la cohérence avec ces éléments déjà créés) :\n'+narrativeChain.map(x=>`- ${x.tool} : "${x.title}" — ${x.preview}`).join('\n');
+}
+window.continueWith=function(toolType){
+  navigateTo(toolType);
+  setTimeout(()=>{
+    const inputs=['g-theme','g-chap-ctx','g-dial-ctx','g-proph-subject','g-cover-subject','g-rel-a','g-script-ctx','g-arc-concept','g-st-universe'];
+    for(const id of inputs){
+      const el=document.getElementById(id);
+      if(el&&!el.value){el.value=narrativeChain.map(x=>x.title).join(', ');el.style.borderColor='#9b6dff';break;}
+    }
+  },150);
+};
+window.exportUniverse=function(){
+  if(!narrativeChain.length)return;
+  const txt='✦ THE LOREFORGE — MON UNIVERS\n'+'═'.repeat(38)+'\n\n'+narrativeChain.map((x,i)=>`${i+1}. ${x.tool.toUpperCase()} : ${x.title}\n${'─'.repeat(30)}\n${x.preview}\n`).join('\n')+'\n'+'═'.repeat(38)+'\nCréé avec The Loreforge';
+  if(navigator.share)navigator.share({title:'Mon Univers Loreforge',text:txt});
+  else navigator.clipboard.writeText(txt).then(()=>alert('Univers copié !'));
+};
+
+// ═══════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════
+function navigateTo(id,back=false){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active','slide'));
+  const sc=document.getElementById('screen-'+id);if(!sc)return;
+  sc.classList.add('active');
+  if(!back&&!MAIN_SCREENS.includes(id))sc.classList.add('slide');
+  document.getElementById('back-btn').style.display=MAIN_SCREENS.includes(id)?'none':'block';
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.sc===id));
+  if(id==='home')document.querySelector('[data-sc="home"]').classList.add('active');
+  if(id==='favs')renderFavs();
+  if(id==='forge')renderChain();
+}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>navigateTo(b.dataset.sc)));
+document.getElementById('back-btn').addEventListener('click',()=>navigateTo('home',true));
+document.getElementById('eye-btn').addEventListener('click',()=>navigateTo('eye'));
+
+// ═══════════════════════════════════════════
+//  TOOLS GRID
+// ═══════════════════════════════════════════
+function buildGrid(tools,id,tier){
+  document.getElementById(id).innerHTML=tools.map(t=>{
+    const cls=tier==='forge'?'tcrd tcrd-f':tier==='etincelle'?'tcrd tcrd-e':'tcrd';
+    const badgeCls=tier==='forge'?'badge badge-f':tier==='etincelle'?'badge badge-e':'badge badge-free';
+    const badgeTxt=tier==='forge'?'🥇 Forge':tier==='etincelle'?'🥈 Étincelle':'Gratuit';
+    const click=tier==='forge'?`openForge('${t.id}')`:tier==='etincelle'?`openEti('${t.id}')`:`navigateTo('${t.id}')`;
+    return`<div class="${cls}" onclick="${click}"><span class="tc-icon">${t.icon}</span><div class="tc-name">${t.name}</div><div class="tc-desc">${t.desc}</div><span class="${badgeCls}">${badgeTxt}</span></div>`;
+  }).join('');
+}
+window.openEti=id=>{if(isEti())navigateTo(id);else openUpgrade();};
+window.openForge=id=>{if(isForge())navigateTo(id);else openUpgrade();};
+buildGrid(FREE_TOOLS,'grid-free','free');
+buildGrid(ETI_TOOLS,'grid-etincelle','etincelle');
+buildGrid(FORGE_TOOLS,'grid-forge','forge');
+
+// ═══════════════════════════════════════════
+//  TAGS
+// ═══════════════════════════════════════════
+function buildTags(items,containerId,stateKey){
+  const el=document.getElementById(containerId);if(!el)return;
+  el.innerHTML=items.map(it=>`<button class="tag${it===sel[stateKey]?' sel':''}" data-v="${it}">${it}</button>`).join('');
+  el.querySelectorAll('.tag').forEach(t=>t.addEventListener('click',()=>{sel[stateKey]=t.dataset.v;el.querySelectorAll('.tag').forEach(x=>x.classList.remove('sel'));t.classList.add('sel');}));
+}
+const TAGS_MAP=[
+  ['g-genre','genre',GENRES],['g-tone','tone',TONES],['g-origin','origin',ORIGINS],
+  ['g-archetype','archetype',ARCHETYPES],['g-gender','gender',GENDERS],
+  ['g-proph-theme','proph-theme',PROPH_THEMES],['g-quest-type','quest-type',QUEST_TYPES],
+  ['g-quest-diff','quest-diff',QUEST_DIFF],['g-magic-type','magic-type',MAGIC_TYPES],
+  ['g-magic-tone','magic-tone',MAGIC_TONES],['g-place-type','place-type',PLACE_TYPES],
+  ['g-place-mood','place-mood',PLACE_MOODS],['g-faction-type','faction-type',FACTION_TYPES],
+  ['g-faction-ideo','faction-ideo',FACTION_IDEO],['g-uni-genre','uni-genre',UNI_GENRES],
+  ['g-uni-mood','uni-mood',UNI_MOODS],['g-chap-type','chap-type',CHAP_TYPES],
+  ['g-dial-tension','dial-tension',DIAL_TENSIONS],['g-cover-style','cover-style',COVER_STYLES],
+  ['g-cover-mood','cover-mood',COVER_MOODS],['g-rel-type','rel-type',REL_TYPES],
+  ['g-script-type','script-type',SCRIPT_TYPES],['g-script-panels','script-panels',SCRIPT_PANELS],
+  ['g-arc-genre','arc-genre',ARC_GENRES],['g-arc-episodes','arc-episodes',ARC_EPISODES],
+  ['g-st-genre','st-genre',ST_GENRES],['g-st-theme','st-theme',ST_THEMES],
+];
+TAGS_MAP.forEach(([elId,stateKey,items])=>buildTags(items,elId,stateKey));
+
+// ═══════════════════════════════════════════
+//  COUNTERS
+// ═══════════════════════════════════════════
+['story','char','prophecy','quest','magic','place','faction','universe','chapter','dialogue','cover','relation','script','arc','serietitle'].forEach(t=>renderCounter(t,'c-'+t));
+
+// ═══════════════════════════════════════════
+//  API
+// ═══════════════════════════════════════════
+async function callClaude(prompt){
+  const body=JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1400,messages:[{role:'user',content:prompt}]});
+  const r=await fetch('https://corsproxy.io/?url=https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key':'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',
+      'anthropic-version':'2023-06-01'
+    },
+    body
+  });
+  const d=await r.json();
+  const text=d.content?.map(i=>i.text||'').join('')||'';
+  return JSON.parse(text.replace(/```json|```/g,'').trim());
+}
+function loading(id,msg='Génération en cours…'){
+  document.getElementById('r-'+id).innerHTML=`<div class="loading"><span class="spin">✦</span><p style="margin-top:10px;font-style:italic">${msg}</p></div>`;
+}
+function errMsg(id){document.getElementById('r-'+id).innerHTML=`<p style="color:var(--red);text-align:center;padding:20px">Erreur — Réessaie !</p>`;}
+
+// ═══════════════════════════════════════════
+//  RESULT ACTIONS
+// ═══════════════════════════════════════════
+function actions(fid,toolType,toolLabel,title,preview){
+  const st=title.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+  const sp=preview.replace(/'/g,"\\'").replace(/"/g,'&quot;').slice(0,80);
+  const sl=toolLabel.replace(/'/g,"\\'");
+  return`<div class="r-actions">
+    <button class="act-btn" id="ab-${fid}" onclick="toggleFav('${fid}','${sl}','${st}','${sp}')">⭐ Sauvegarder</button>
+    <button class="act-btn" onclick="shareR('${st}','${sp}')">🔗 Partager</button>
+    <button class="fil-btn" onclick="addToChain('${fid}','${toolType}','${sl}','${st}','${sp}')">🧵 Fil</button>
+  </div>`;
+}
+window.toggleFav=function(id,tool,title,preview){
+  const btn=document.getElementById('ab-'+id);
+  if(btn.classList.contains('saved')){delFav(id);btn.classList.remove('saved');btn.innerHTML='⭐ Sauvegarder';}
+  else{saveFav({id,tool,title,preview});btn.classList.add('saved');btn.innerHTML='✦ Sauvegardé';}
+};
+window.shareR=function(title,preview){
+  const txt=`✦ ${title}\n${preview}\n\nCréé avec The Loreforge`;
+  if(navigator.share)navigator.share({title:'The Loreforge',text:txt});
+  else navigator.clipboard.writeText(txt).then(()=>alert('Copié !'));
+};
+
+// ═══════════════════════════════════════════
+//  GENERIC GENERATOR
+// ═══════════════════════════════════════════
+async function gen(tool,prompt,renderFn,tier='free'){
+  const free=tier==='free';
+  const eti=tier==='etincelle';
+  const forge=tier==='forge';
+  if(free&&!canGen(tool)){openUpgrade();return;}
+  if(eti&&!isEti()){openUpgrade();return;}
+  if(forge&&!isForge()){openUpgrade();return;}
+  const btn=document.getElementById('btn-'+tool);
+  btn.disabled=true;loading(tool);
+  try{
+    const d=await callClaude(prompt);
+    if(free)incUsage(tool);
+    renderCounter(tool,'c-'+tool);
+    renderFn(d);
+  }catch{errMsg(tool);}
+  finally{btn.disabled=false;}
+}
+
+// ═══════════════════════════════════════════
+//  GENERATORS
+// ═══════════════════════════════════════════
+
+// HISTOIRE
+document.getElementById('btn-story').addEventListener('click',()=>{
+  const theme=document.getElementById('g-theme').value;
+  const ctx=getChainContext();
+  gen('story',`Génère une histoire en JSON strict sans backticks.
+Genre:${sel.genre} Ton:${sel.tone} Thème:${theme||'libre'}${ctx}
+{"title":"","synopsis":"4-5 phrases","characters":[{"name":"","role":""},{"name":"","role":""},{"name":"","role":""}],"world":"3-4 phrases","twist":"retournement surprenant","opening":"première phrase percutante"}`,d=>{
+    const fid='f'+Date.now();
+    document.getElementById('r-story').innerHTML=`<div class="card res"><span class="rl">Titre</span><div class="rt">${d.title}</div><div class="divider"></div><span class="rl">Synopsis</span><p class="rb" style="margin-bottom:14px">${d.synopsis}</p><span class="rl">Personnages</span><div style="margin-bottom:14px">${d.characters.map(c=>`<div style="display:flex;gap:8px;align-items:baseline;margin-bottom:5px"><span style="font-family:'Playfair Display',serif;font-size:15px">${c.name}</span><span style="font-size:13px;color:var(--tm)"> — ${c.role}</span></div>`).join('')}</div><span class="rl">Univers</span><p class="rb" style="margin-bottom:0">${d.world}</p><div class="twist"><span class="rl">🌀 Twist</span><p style="font-style:italic;font-size:14px;line-height:1.7;color:#e0d4b8">${d.twist}</p></div><div class="incipit"><span class="rl">Incipit</span><p class="italic">"${d.opening}"</p></div>${actions(fid,'story','Histoire',d.title,d.synopsis)}</div>`;
+  });
+});
+
+// PERSONNAGE
+document.getElementById('btn-char').addEventListener('click',()=>{
+  const chosenName=document.getElementById('g-char-name').value.trim();
+  const ctx=getChainContext();
+  gen('char',`Génère un personnage en JSON strict sans backticks.
+Origine:${sel.origin} Archétype:${sel.archetype} Genre:${sel.gender}${chosenName?` Nom imposé:"${chosenName}" (utilise exactement ce nom, construis signification et étymologie autour de lui)`:''}${ctx}
+{"name":"${chosenName||''}","pronunciation":"[phonétique]","symbol":"emoji","origin":"","meaning":"","archetype":"","era":"","traits":["","","","",""],"backstory":"4-5 phrases","quote":"citation","alternatives":["","","",""]}`,d=>{
+    const fid='f'+Date.now();
+    document.getElementById('r-char').innerHTML=`<div class="card res"><div class="char-id"><span class="char-emoji">${d.symbol}</span><div class="char-n">${d.name}</div><div class="char-p">${d.pronunciation}</div></div><div class="divider"></div><div class="g2"><div class="gi"><span class="gl">Origine</span><span class="gv">${d.origin}</span></div><div class="gi"><span class="gl">Signification</span><span class="gv">${d.meaning}</span></div><div class="gi"><span class="gl">Archétype</span><span class="gv">${d.archetype}</span></div><div class="gi"><span class="gl">Époque</span><span class="gv">${d.era}</span></div></div><span class="rl">Traits</span><div class="traits">${d.traits.map(t=>`<span class="trait">${t}</span>`).join('')}</div><span class="rl">Histoire</span><p class="rb" style="margin-bottom:14px">${d.backstory}</p><div class="twist"><span class="rl">Citation</span><p class="italic" style="font-size:15px">"${d.quote}"</p></div><div style="margin-top:12px"><span class="rl">Alternatives</span><p style="font-family:'Playfair Display',serif;color:var(--tm);font-size:13px;line-height:2">${d.alternatives.join('  ·  ')}</p></div>${actions(fid,'char','Personnage',d.name,d.backstory)}</div>`;
+  });
+});
+
+// PROPHÉTIE
+document.getElementById('btn-prophecy').addEventListener('click',()=>{
+  const subject=document.getElementById('g-proph-subject').value;
+  const ctx=getChainContext();
+  gen('prophecy',`Génère une prophétie en JSON strict sans backticks.
+Thème:${sel['proph-theme']} Sujet:${subject||'un être de lumière et d\'ombre'}${ctx}
+{"title":"","verse":"4-6 lignes poétiques cryptiques séparées par \\n","subject":"","interpretation":"","hidden_meaning":"","trigger":""}`,d=>{
+    const fid='f'+Date.now();
+    document.getElementById('r-prophecy').innerHTML=`<div class="card res"><span class="rl">Titre</span><div class="rt">${d.title}</div><div class="divider"></div><div class="prophecy-verse">${(d.verse||'').replace(/\\n/g,'<br>')}</div><span class="rl">Sujet</span><p class="rb" style="margin-bottom:14px">${d.subject}</p><div class="g2"><div class="gi" style="grid-column:span 2"><span class="gl">Interprétation</span><span class="gv" style="font-size:13px;line-height:1.6">${d.interpretation}</span></div></div><div class="twist"><span class="rl">🌀 Sens Caché</span><p style="font-style:italic;font-size:14px;line-height:1.7;color:#e0d4b8">${d.hidden_meaning}</p></div><div class="incipit"><span class="rl">Déclencheur</span><p class="rb">${d.trigger}</p></div>${actions(fid,'prophecy','Prophétie',d.title,d.verse||'')}</div>`;
+  });
+});
+
+// QUÊTE
+document.getElementById('btn-quest').addEventListener('click',()=>{
+  const ctx=getChainContext();
+  gen('quest',`Génère une quête en JSON strict sans backticks.
+Type:${sel['quest-type']} Difficulté:${sel['quest-diff']}${ctx}
+{"title":"","objective":"","giver":"","location":"","obstacles":["","",""],"reward":"","twist":"","difficulty":"${sel['quest-diff']}"}`,d=>{
+    const fid='f'+Date.now();
+    document.getElementById('r-quest').innerHTML=`<div class="card res"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><div class="rt" style="margin:0">${d.title}</div><span style="padding:5px 12px;border-radius:20px;background:var(--gd);border:1px solid var(--gb);font-size:12px;color:var(--g);white-space:nowrap">${d.difficulty}</span></div><div class="divider"></div><div class="g2"><div class="gi"><span class="gl">Objectif</span><span class="gv" style="font-size:13px;line-height:1.5">${d.objective}</span></div><div class="gi"><span class="gl">Donneur</span><span class="gv" style="font-size:13px">${d.giver}</span></div><div class="gi" style="grid-column:span 2"><span class="gl">Lieu</span><span class="gv">${d.location}</span></div></div><span class="rl">Obstacles</span><div style="margin-bottom:14px">${d.obstacles.map((o,i)=>`<div class="li-item"><span class="li-n">${i+1}.</span><span>${o}</span></div>`).join('')}</div><div class="twist"><span class="rl">🎁 Récompense</span><p style="font-size:14px;color:#e0d4b8">${d.reward}</p></div><div class="incipit"><span class="rl">🌀 Twist</span><p class="rb">${d.twist}</p></div>${actions(fid,'quest','Quête',d.title,d.objective)}</div>`;
+  });
+});
+
+// MAGIE
+document.getElementById('btn-magic').addEventListener('click',()=>{
+  gen('magic',`Génère un système de magie en JSON strict sans backticks.
+Type:${sel['magic-type']} Ton:${sel['magic-tone']}${getChainContext()}
+{"name":"","source":"","rules":["","",""],"cost":"","limits":"","rare_power":"","weakness":"","lore":"3 phrases"}`,d=>{
+    const fid='f'+Date.now();
+    document.getElementById('r-magic').innerHTML=`<div class="card res"><span class="rl">Système</span><div class="rt">${d.name}</div><div class="divider"></div><div class="g2"><div class="gi" style="grid-column:span 2"><span class="gl">Source</span><span class="gv" style="font-size:13px">${d.source}</span></div><div class="gi"><span class="gl">Coût</span><span class="gv" style="font-size:13px">${d.cost}</span></div><div class="gi"><span class="gl">Limites</span><span class="gv" style="font-size:13px">${d.limits}</span></div></div><span class="rl">Règles</span><div style="margin-bottom:14px">${d.rules.map((r,i)=>`<div class="li-item"><span class="li-n">${i+1}.</span><span>${r}</span></div>`).join('')}</div><div class="twist"><span class="rl">⚡ Pouvoir Rare</span><p style="font-style:italic;font-size:14px;color:#e0d4b8">${d.rare_power}</p></div><div class="incipit"><span class="rl">Faiblesse</span><p class="rb">${d.weakness}</p></div><span class="rl" style="margin-top:14px;display:block">Lore</span><p class="rb">${d.lore}</p>${actions(fid,'magic','Magie',d.name,d.source)}</div>`;
+  },'etincelle');
+});
+
+// LIEU
+document.getElementById('btn-place').addEventListener('click',()=>{
+  gen('place',`Génère un lieu en JSON strict sans backticks.
+Type:${sel['place-type']} Ambiance:${sel['place-mood']}${getChainContext()}
+{"name":"","type":"","atmosphere":"2 phrases","geography":"2 phrases","inhabitants":"","secret":"","danger":"","legend":"","hook":""}`,d=>{
+    const fid='f'+Date.now();
+    document.getElementById('r-place').innerHTML=`<div class="card res"><div style="margin-bottom:14px"><div class="rt" style="margin:0">${d.name}</div><div style="font-size:12px;color:var(--tm)">${d.type}</div></div><div class="divider"></div><span class="rl">Atmosphère</span><p class="rb" style="margin-bottom:14px">${d.atmosphere}</p><div class="g2"><div class="gi"><span class="gl">Géographie</span><span class="gv" style="font-size:13px;line-height:1.5">${d.geography}</span></div><div class="gi"><span class="gl">Habitants</span><span class="gv" style="font-size:13px">${d.inhabitants}</span></div><div class="gi"><span class="gl">Danger</span><span class="gv" style="font-size:13px">${d.danger}</span></div><div class="gi"><span class="gl">Légende</span><span class="gv" style="font-size:13px">${d.legend}</span></div></div><div class="twist"><span class="rl">🔐 Secret</span><p style="font-style:italic;font-size:14px;color:#e0d4b8">${d.secret}</p></div><div class="incipit"><span class="rl">Accroche</span><p class="rb">${d.hook}</p></div>${actions(fid,'place','Lieu',d.name,d.atmosphere)}</div>`;
+  },'etincelle');
+});
+
+// FACTION
+document.getElementById('btn-faction').addEventListener('click',()=>{
+  gen('faction',`Génère une faction en JSON strict sans backticks.
+Type:${sel['faction-type']} Idéologie:${sel['faction-ideo']}${getChainContext()}
+{"name":"","motto":"","symbol":"emoji","ideology":"2 phrases","leader":"","goal":"","methods":"","enemy":"","secret":"","join_condition":""}`,d=>{
+    const fid='f'+Date.now();
+    document.getElementById('r-faction').innerHTML=`<div class="card res"><div style="text-align:center;padding:14px 0"><div style="font-size:36px">${d.symbol}</div><div class="rt" style="margin:8px 0 4px">${d.name}</div><div style="font-size:14px;color:var(--g);font-style:italic">"${d.motto}"</div></div><div class="divider"></div><span class="rl">Idéologie</span><p class="rb" style="margin-bottom:14px">${d.ideology}</p><div class="g2"><div class="gi"><span class="gl">Chef</span><span class="gv" style="font-size:13px">${d.leader}</span></div><div class="gi"><span class="gl">Ennemi</span><span class="gv" style="font-size:13px">${d.enemy}</span></div><div class="gi"><span class="gl">Méthodes</span><span class="gv" style="font-size:13px;line-height:1.5">${d.methods}</span></div><div class="gi"><span class="gl">Pour Rejoindre</span><span class="gv" style="font-size:13px;line-height:1.5">${d.join_condition}</span></div></div><span class="rl">Objectif</span><p class="rb" style="margin-bottom:14px">${d.goal}</p><div class="twist"><span class="rl">🔐 Secret</span><p style="font-style:italic;font-size:14px;color:#e0d4b8">${d.secret}</p></div>${actions(fid,'faction','Faction',d.name,d.ideology)}</div>`;
+  },'etincelle');
+});
+
+// UNIVERS
+document.getElementById('btn-universe').addEventListener('click',()=>{
+  gen('universe',`Génère un univers complet et cohérent en JSON strict sans backticks.
+Genre:${sel['uni-genre']} Ambiance:${sel['uni-mood']}${getChainContext()}
+{"world_name":"","tagline":"","story":{"title":"","synopsis":"3 phrases"},"hero":{"name":"","role":"","trait":"une phrase"},"place":{"name":"","description":"2 phrases"},"magic":{"name":"","rule":"une phrase"},"conflict":"2 phrases","hook":"scène d'ouverture"}`,d=>{
+    const fid='f'+Date.now();
+    document.getElementById('r-universe').innerHTML=`<div class="card res"><div style="text-align:center;padding:16px 0 12px"><div style="font-size:10px;letter-spacing:2px;color:var(--g);text-transform:uppercase;margin-bottom:6px">Univers</div><div class="rt" style="font-size:26px;margin:0">${d.world_name}</div><div style="font-size:14px;color:var(--tm);font-style:italic;margin-top:4px">${d.tagline}</div></div><div class="divider"></div><div class="gi" style="margin-bottom:10px"><span class="gl">📖 Histoire — ${d.story.title}</span><span class="gv" style="font-size:13px;line-height:1.6">${d.story.synopsis}</span></div><div class="g2"><div class="gi"><span class="gl">⚔️ ${d.hero.name}</span><span class="gv" style="font-size:12px;line-height:1.5">${d.hero.role}<br><span style="color:var(--tm);font-style:italic">${d.hero.trait}</span></span></div><div class="gi"><span class="gl">🏰 ${d.place.name}</span><span class="gv" style="font-size:12px;line-height:1.5">${d.place.description}</span></div></div><div class="gi" style="margin-bottom:14px"><span class="gl">✨ Magie — ${d.magic.name}</span><span class="gv" style="font-size:13px">${d.magic.rule}</span></div><span class="rl">Conflit Central</span><p class="rb" style="margin-bottom:14px">${d.conflict}</p><div class="incipit"><span class="rl">🎬 Scène d'Ouverture</span><p class="italic" style="font-size:15px">${d.hook}</p></div>${actions(fid,'universe','Univers',d.world_name,d.tagline)}</div>`;
+  },'etincelle');
+});
+
+// CHAPITRE
+document.getElementById('btn-chapter').addEventListener('click',()=>{
+  const ctx2=document.getElementById('g-chap-ctx').value;
+  gen('chapter',`Génère un chapitre en JSON strict sans backticks.
+Scène:${sel['chap-type']} Contexte:${ctx2||'libre'}${getChainContext()}
+{"title":"","scene":"scène immersive 400-450 mots avec dialogues et descriptions sensorielles","mood":"ambiance en 4 mots","cliffhanger":"dernière phrase en suspens"}`,d=>{
+    const fid='f'+Date.now();
+    document.getElementById('r-chapter').innerHTML=`<div class="card res"><span class="rl">Chapitre</span><div class="rt">${d.title}</div><span style="display:inline-block;padding:4px 12px;border-radius:20px;background:var(--gd);border:1px solid var(--gb);font-size:12px;color:var(--g);margin-bottom:14px">${d.mood}</span><div class="divider"></div><p style="font-size:15px;line-height:1.85;color:var(--t2);white-space:pre-line">${d.scene}</p><div class="incipit" style="margin-top:16px"><span class="rl">Cliffhanger</span><p class="italic">${d.cliffhanger}</p></div>${actions(fid,'chapter','Chapitre',d.title,d.scene.slice(0,80))}</div>`;
+  },'etincelle');
+});
+
+// DIALOGUE
+document.getElementById('btn-dialogue').addEventListener('click',()=>{
+  const ctx3=document.getElementById('g-dial-ctx').value;
+  gen('dialogue',`Génère un dialogue en JSON strict sans backticks.
+Tension:${sel['dial-tension']} Contexte:${ctx3||'libre'}${getChainContext()}
+{"title":"","characters":["Nom A","Nom B"],"lines":[{"speaker":"A","text":"","subtext":""},{"speaker":"B","text":"","subtext":""},{"speaker":"A","text":"","subtext":""},{"speaker":"B","text":"","subtext":""},{"speaker":"A","text":"","subtext":""},{"speaker":"B","text":"","subtext":""},{"speaker":"A","text":"","subtext":""},{"speaker":"B","text":"","subtext":""}],"tension_level":"1-10","outcome":""}`,d=>{
+    const fid='f'+Date.now();
+    const lines=d.lines.map(l=>`<div class="dial-line ${l.speaker===d.characters[0]?'dla':'dlb'}"><div class="dl-sp">${l.speaker}</div><div>${l.text}</div>${l.subtext?`<div class="dl-sub">→ ${l.subtext}</div>`:''}</div>`).join('');
+    document.getElementById('r-dialogue').innerHTML=`<div class="card res"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><div class="rt" style="margin:0">${d.title}</div><span style="padding:5px 12px;border-radius:20px;background:var(--gd);border:1px solid var(--gb);font-size:12px;color:var(--g)">⚡ ${d.tension_level}/10</span></div><div style="display:flex;gap:8px;margin-bottom:14px">${d.characters.map((c,i)=>`<span style="padding:4px 12px;border-radius:20px;border:1px solid var(--bl);font-size:13px;color:var(--t2)">${i===0?'⬤':'○'} ${c}</span>`).join('')}</div><div class="divider"></div>${lines}<div class="incipit" style="margin-top:14px"><span class="rl">Ce que révèle cette scène</span><p class="rb">${d.outcome}</p></div>${actions(fid,'dialogue','Dialogue',d.title,d.outcome)}</div>`;
+  },'etincelle');
+});
+
+// COUVERTURE (FORGE)
+document.getElementById('btn-cover').addEventListener('click',()=>{
+  const subject=document.getElementById('g-cover-subject').value;
+  gen('cover',`Génère une description de couverture illustrée en JSON strict sans backticks.
+Style:${sel['cover-style']} Ambiance:${sel['cover-mood']} Sujet:${subject||'libre'}${getChainContext()}
+{"title":"Titre de la couverture","composition":"Description précise de la composition visuelle (premier plan, arrière-plan, postures)","palette":["couleur1","couleur2","couleur3","couleur4"],"lighting":"Type d'éclairage et effets","character_desc":"Description précise du/des personnage(s) visible(s)","details":["détail visuel 1","détail visuel 2","détail visuel 3"],"mood_desc":"L'ambiance émotionnelle que dégage l'illustration","prompt_ia":"Prompt en anglais optimisé pour Midjourney ou DALL-E"}`,d=>{
+    const fid='f'+Date.now();
+    document.getElementById('r-cover').innerHTML=`<div class="card res"><span class="rl">Couverture</span><div class="rt">${d.title}</div><div class="divider"></div><span class="rl">Composition</span><p class="rb" style="margin-bottom:14px">${d.composition}</p><span class="rl">Palette de Couleurs</span><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">${d.palette.map(c=>`<span style="padding:5px 12px;border-radius:20px;background:var(--gd);border:1px solid var(--gb);font-size:13px;color:var(--g)">${c}</span>`).join('')}</div><div class="g2"><div class="gi"><span class="gl">Éclairage</span><span class="gv" style="font-size:13px;line-height:1.5">${d.lighting}</span></div><div class="gi"><span class="gl">Ambiance</span><span class="gv" style="font-size:13px;line-height:1.5">${d.mood_desc}</span></div></div><span class="rl">Personnages</span><p class="rb" style="margin-bottom:14px">${d.character_desc}</p><span class="rl">Détails Visuels</span><div style="margin-bottom:14px">${d.details.map((det,i)=>`<div class="li-item"><span class="li-n">${i+1}.</span><span>${det}</span></div>`).join('')}</div><div class="twist"><span class="rl">🤖 Prompt IA (Midjourney / DALL-E)</span><p style="font-size:13px;color:#e0d4b8;line-height:1.7;font-style:italic">${d.prompt_ia}</p></div>${actions(fid,'cover','Couverture',d.title,d.composition)}</div>`;
+  },'forge');
+});
+
+// RELATION (FORGE)
+document.getElementById('btn-relation').addEventListener('click',()=>{
+  const charA=document.getElementById('g-rel-a').value||'Personnage A';
+  const charB=document.getElementById('g-rel-b').value||'Personnage B';
+  gen('relation',`Génère une dynamique relationnelle entre deux personnages en JSON strict sans backticks.
+Type:${sel['rel-type']} Personnage A:"${charA}" Personnage B:"${charB}"${getChainContext()}
+{"relation_name":"Nom poétique de cette relation","type":"${sel['rel-type']}","history":"Comment ils se sont rencontrés — 3 phrases","tension":"Ce qui les attire et les repousse en même temps","secret":"Ce que l'un cache à l'autre","power_dynamic":"Qui domine, qui subit, pourquoi","key_moment":"La scène fondatrice de leur relation","evolution":"Comment cette relation va évoluer — 3 étapes","fatal_flaw":"Ce qui pourrait les détruire","quote_a":"Une phrase que A pense de B","quote_b":"Une phrase que B pense de A"}`,d=>{
+    const fid='f'+Date.now();
+    document.getElementById('r-relation').innerHTML=`<div class="card res"><div style="text-align:center;padding:14px 0 10px"><div style="font-size:10px;letter-spacing:2px;color:var(--g);text-transform:uppercase;margin-bottom:6px">${d.type}</div><div class="rt" style="margin:0">${d.relation_name}</div><div style="display:flex;gap:12px;justify-content:center;margin-top:10px"><span style="padding:4px 14px;border-radius:20px;border:1px solid var(--gb);font-size:13px;color:var(--g)">${charA}</span><span style="color:var(--tm);font-size:18px">⟷</span><span style="padding:4px 14px;border-radius:20px;border:1px solid var(--pb);font-size:13px;color:#b48fff">${charB}</span></div></div><div class="divider"></div><span class="rl">Histoire</span><p class="rb" style="margin-bottom:14px">${d.history}</p><div class="g2"><div class="gi"><span class="gl">Tension</span><span class="gv" style="font-size:13px;line-height:1.5">${d.tension}</span></div><div class="gi"><span class="gl">Dynamique</span><span class="gv" style="font-size:13px;line-height:1.5">${d.power_dynamic}</span></div></div><span class="rl">Secret</span><p class="rb" style="margin-bottom:14px">${d.secret}</p><span class="rl">Scène Fondatrice</span><p class="rb" style="margin-bottom:14px">${d.key_moment}</p><span class="rl">Évolution</span><p class="rb" style="margin-bottom:14px">${d.evolution}</p><div class="twist"><span class="rl">💀 Ce qui peut les détruire</span><p style="font-style:italic;font-size:14px;color:#e0d4b8">${d.fatal_flaw}</p></div><div style="margin-top:14px"><div style="padding:10px 14px;border-radius:10px;background:var(--gd);border-left:2px solid var(--g);margin-bottom:8px"><div style="font-size:10px;color:var(--g);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">${charA} pense</div><div style="font-size:14px;font-style:italic;color:var(--t)">"${d.quote_a}"</div></div><div style="padding:10px 14px;border-radius:10px;background:var(--pd);border-left:2px solid var(--p)"><div style="font-size:10px;color:#b48fff;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">${charB} pense</div><div style="font-size:14px;font-style:italic;color:var(--t)">"${d.quote_b}"</div></div></div>${actions(fid,'relation','Relation',d.relation_name,d.history)}</div>`;
+  },'forge');
+});
+
+// SCRIPT PANEL (FORGE)
+document.getElementById('btn-script').addEventListener('click',()=>{
+  const ctx4=document.getElementById('g-script-ctx').value;
+  const nbPanels=parseInt(sel['script-panels'])||6;
+  gen('script',`Génère un script de webtoon panel par panel en JSON strict sans backticks.
+Type de scène:${sel['script-type']} Contexte:${ctx4||'libre'} Nombre de cases:${nbPanels}${getChainContext()}
+{"title":"Titre de la scène","panels":[{"num":1,"angle":"Type de plan (gros plan, plan large, contre-plongée...)","description":"Ce qu'on voit dans la case, décrit avec précision","dialogue":"Texte du/des personnage(s) ou vide si silencieux","sfx":"Effets sonores si besoin ou vide","mood":"Émotion dominante de la case"}],"notes":"Conseils au dessinateur"}`,d=>{
+    const fid='f'+Date.now();
+    document.getElementById('r-script').innerHTML=`<div class="card res"><span class="rl">Script</span><div class="rt">${d.title}</div><div class="divider"></div>${(d.panels||[]).map(p=>`<div class="panel-box"><div><span class="panel-num">Case ${p.num}</span> <span style="font-size:11px;color:var(--tm);margin-left:8px">${p.angle}</span></div><p style="font-size:14px;color:var(--t2);line-height:1.6;margin:8px 0">${p.description}</p>${p.dialogue?`<div style="background:var(--gd);border-radius:8px;padding:8px 12px;margin-top:6px;font-size:13px;color:var(--t);font-style:italic">"${p.dialogue}"</div>`:''}${p.sfx?`<div style="font-size:11px;color:var(--p);margin-top:4px">🔊 ${p.sfx}</div>`:''}${p.mood?`<div style="font-size:11px;color:var(--tm);margin-top:4px;font-style:italic">${p.mood}</div>`:''}</div>`).join('')}${d.notes?`<div class="twist"><span class="rl">📐 Notes au Dessinateur</span><p style="font-size:13px;color:#e0d4b8;line-height:1.7">${d.notes}</p></div>`:''}${actions(fid,'script','Script Panel',d.title,(d.panels&&d.panels[0])?d.panels[0].description:'')}</div>`;
+  },'forge');
+});
+
+// ARC NARRATIF (FORGE)
+document.getElementById('btn-arc').addEventListener('click',()=>{
+  const concept=document.getElementById('g-arc-concept').value;
+  gen('arc',`Génère un arc narratif complet en JSON strict sans backticks.
+Genre:${sel['arc-genre']} Episodes:${sel['arc-episodes']} Concept:${concept||'libre'}${getChainContext()}
+{"series_title":"Titre proposé","logline":"Résumé en une phrase percutante","theme":"Le thème central profond","episodes":[{"num":1,"title":"","summary":"2 phrases","key_event":"L'événement clé","tone":""},{"num":2,"title":"","summary":"","key_event":"","tone":""},{"num":3,"title":"","summary":"","key_event":"","tone":""}],"midpoint":"Le tournant central de la saison","climax":"Le point culminant","resolution":"La résolution ou cliffhanger","character_arc":"L'évolution du protagoniste sur la saison"}`,d=>{
+    const fid='f'+Date.now();
+    document.getElementById('r-arc').innerHTML=`<div class="card res"><span class="rl">Arc Narratif</span><div class="rt">${d.series_title}</div><div style="padding:10px 14px;background:var(--gd);border-radius:10px;margin-bottom:14px;font-size:14px;font-style:italic;color:var(--t2)">${d.logline}</div><div class="divider"></div><span class="rl">Thème Central</span><p class="rb" style="margin-bottom:14px">${d.theme}</p><span class="rl">Épisodes Clés</span><div style="margin-bottom:14px">${(d.episodes||[]).map(ep=>`<div style="border:1px solid var(--bl);border-radius:10px;padding:12px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="padding:2px 10px;border-radius:20px;background:var(--pd);border:1px solid var(--pb);font-size:11px;color:var(--p)">Ep. ${ep.num}</span><span style="font-family:'Playfair Display',serif;font-size:14px;color:var(--t)">${ep.title}</span><span style="font-size:11px;color:var(--tm);margin-left:auto">${ep.tone}</span></div><p style="font-size:13px;color:var(--t2);line-height:1.5;margin-bottom:4px">${ep.summary}</p><div style="font-size:12px;color:var(--g)">⚡ ${ep.key_event}</div></div>`).join('')}</div><div class="g2"><div class="gi"><span class="gl">Tournant Central</span><span class="gv" style="font-size:13px;line-height:1.5">${d.midpoint}</span></div><div class="gi"><span class="gl">Climax</span><span class="gv" style="font-size:13px;line-height:1.5">${d.climax}</span></div></div><div class="twist"><span class="rl">🌀 Résolution / Cliffhanger</span><p style="font-style:italic;font-size:14px;color:#e0d4b8">${d.resolution}</p></div><div class="incipit"><span class="rl">Arc du Protagoniste</span><p class="rb">${d.character_arc}</p></div>${actions(fid,'arc','Arc Narratif',d.series_title,d.logline)}</div>`;
+  },'forge');
+});
+
+// TITRE DE SÉRIE (FORGE)
+document.getElementById('btn-serietitle').addEventListener('click',()=>{
+  const universe2=document.getElementById('g-st-universe').value;
+  gen('serietitle',`Génère des propositions de titres de série en JSON strict sans backticks.
+Genre:${sel['st-genre']} Thème:${sel['st-theme']} Univers:${universe2||'libre'}${getChainContext()}
+{"titles":[{"title":"","subtitle":"Sous-titre optionnel","why":"Pourquoi ce titre fonctionne","tagline":"Accroche marketing en une phrase","tone":"Impression que le titre donne"},{"title":"","subtitle":"","why":"","tagline":"","tone":""},{"title":"","subtitle":"","why":"","tagline":"","tone":""}],"winner":"Le titre recommandé parmi les trois","naming_tip":"Conseil sur le naming pour cette série"}`,d=>{
+    const fid='f'+Date.now();
+    document.getElementById('r-serietitle').innerHTML=`<div class="card res"><span class="rl">Propositions de Titres</span><div style="margin-bottom:14px">${(d.titles||[]).map((t,i)=>`<div style="border:1px solid ${i===0?'var(--gb)':'var(--bl)'};border-radius:12px;padding:16px;margin-bottom:10px;background:${i===0?'var(--gd)':'var(--bgc)'}"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">${i===0?'<span style="font-size:14px">🥇</span>':'<span style="font-size:14px;color:var(--tm)">'+(i+1)+'.</span>'}<div><div style="font-size:20px;font-family:\'Playfair Display\',serif;color:var(--t)">${t.title}</div>${t.subtitle?`<div style="font-size:13px;color:var(--tm);font-style:italic">${t.subtitle}</div>`:''}</div></div><div style="font-size:13px;color:var(--t2);font-style:italic;margin-bottom:6px">"${t.tagline}"</div><div style="font-size:12px;color:var(--tm)">${t.why}</div><div style="font-size:11px;color:var(--g);margin-top:4px">${t.tone}</div></div>`).join('')}</div><div class="twist"><span class="rl">🏆 Recommandation</span><p style="font-size:14px;color:#e0d4b8">${d.winner}</p></div><div class="incipit"><span class="rl">💡 Conseil Naming</span><p class="rb">${d.naming_tip}</p></div>${actions(fid,'serietitle','Titre de Série',(d.titles&&d.titles[0])?d.titles[0].title:'',d.winner)}</div>`;
+  },'forge');
+});
+
+// ═══════════════════════════════════════════
+//  EYE CARE
+// ═══════════════════════════════════════════
+document.getElementById('tog-warm').addEventListener('change',e=>{
+  warmOn=e.target.checked;
+  document.getElementById('warm-ctrl').style.display=warmOn?'block':'none';
+  applyWarm();
+});
+function applyWarm(){
+  document.getElementById('warm-ov').style.background=warmOn?`rgba(255,140,30,${warmVal})`:'rgba(255,140,30,0)';
+  if(warmOn)document.getElementById('warm-prev').style.background=`rgba(255,147,41,${warmVal})`;
+}
+function buildStepSlider(steps,cur,onChange,containerId,color){
+  const el=document.getElementById(containerId);
+  function render(){
+    el.innerHTML=steps.map(s=>`<button class="sdot" data-v="${s}" style="width:${s===cur?18:10}px;height:${s===cur?18:10}px;background:${s<=cur?color:'var(--bl)'};cursor:pointer"></button>`).join('');
+    el.querySelectorAll('.sdot').forEach(d=>d.addEventListener('click',()=>{cur=parseFloat(d.dataset.v);onChange(cur);render();}));
+  }
+  render();
+}
+buildStepSlider([.05,.1,.15,.2,.25,.3,.35,.4,.45,.5,.55],warmVal,v=>{warmVal=v;applyWarm();},'warm-sl','#e08030');
+buildStepSlider([.1,.2,.3,.4,.5,.6,.7,.8,.9,1],brightVal,v=>{
+  brightVal=v;
+  document.getElementById('bright-val').textContent=Math.round(v*100)+'%';
+  document.getElementById('dim-ov').style.background=v<1?`rgba(0,0,0,${1-v})`:'rgba(0,0,0,0)';
+},'bright-sl','var(--g)');
+const themeGrid=document.getElementById('theme-grid');
+themeGrid.innerHTML=THEMES_DEF.map(t=>`<button class="tcard${t.k===currentTheme?' sel':''}" data-key="${t.k}" style="background:${t.bg}"><span style="font-size:22px;display:block;margin-bottom:6px">${t.icon}</span><span style="font-size:13px;font-family:'Playfair Display',serif;color:${t.t}">${t.name}</span></button>`).join('');
+themeGrid.querySelectorAll('.tcard').forEach(b=>b.addEventListener('click',()=>{
+  currentTheme=b.dataset.key;
+  themeGrid.querySelectorAll('.tcard').forEach(x=>x.classList.remove('sel'));
+  b.classList.add('sel');
+  const theme=THEMES_DEF.find(x=>x.k===currentTheme);
+  const r=document.documentElement;
+  r.style.setProperty('--bg',theme.bg);r.style.setProperty('--bgc',theme.bgc);
+  r.style.setProperty('--t',theme.t);r.style.setProperty('--t2',theme.t2);r.style.setProperty('--b',theme.b);
+}));
+
+// ═══════════════════════════════════════════
+//  DAILY TIP
+// ═══════════════════════════════════════════
+function renderDailyTip(){
+  const dayIdx=new Date().getDay()%DAILY_TIPS.length;
+  const tip=DAILY_TIPS[dayIdx];
+  document.getElementById('daily-tip-wrap').innerHTML=`<div class="tip-daily"><span class="tip-daily-label">✦ Conseil du Jour</span><p class="tip-daily-text">${tip}</p></div>`;
+}
+
+// ═══════════════════════════════════════════
+//  UPGRADE MODAL
+// ═══════════════════════════════════════════
+function openUpgrade(){document.getElementById('up-modal').classList.add('open');}
+window.openUpgrade=openUpgrade;
+window.selectPlan=function(plan){
+  selectedPlan=plan;
+  document.getElementById('check-e').style.display=plan==='etincelle'?'block':'none';
+  document.getElementById('check-f').style.display=plan==='forge'?'block':'none';
+  document.getElementById('plan-e').style.borderColor=plan==='etincelle'?'var(--g)':'var(--gb)';
+  document.getElementById('plan-f').style.borderColor=plan==='forge'?'#9b6dff':'var(--pb)';
+  document.getElementById('msub-btn').textContent=plan==='forge'?'✦ Commencer — Forge 9,99€/mois':'✦ Commencer — Étincelle 2,99€/mois';
+};
+document.getElementById('mclose').addEventListener('click',()=>document.getElementById('up-modal').classList.remove('open'));
+document.getElementById('up-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('open');});
+document.getElementById('msub-btn').addEventListener('click',()=>{
+  localStorage.setItem(PREM_KEY,selectedPlan);
+  document.getElementById('up-modal').classList.remove('open');
+  ['story','char','prophecy','quest','magic','place','faction','universe','chapter','dialogue','cover','relation','script','arc','serietitle'].forEach(t=>renderCounter(t,'c-'+t));
+  buildGrid(FORGE_TOOLS,'grid-forge','forge');
+  buildGrid(ETI_TOOLS,'grid-etincelle','etincelle');
+  alert(`✦ Bienvenue dans Loreforge ${selectedPlan==='forge'?'Forge 🥇':'Étincelle 🥈'} !\n7 jours d'essai gratuit activé.`);
+});
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+loadChain();
+renderFavs();
+renderDailyTip();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
